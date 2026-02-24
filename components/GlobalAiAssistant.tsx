@@ -21,7 +21,7 @@ export default function GlobalAiAssistant() {
 			id: "welcome",
 			role: "assistant",
 			content:
-				"Hello! I'm your AntiGravity assistant. I'm ready to answer any questions about cybersecurity and the site. How can I help you today?",
+				"Hello! I'm your CypherAI assistant. I'm ready to answer any questions about cybersecurity and the site. How can I help you today?",
 		},
 	]);
 	const scrollRef = useRef<HTMLDivElement>(null);
@@ -135,7 +135,7 @@ export default function GlobalAiAssistant() {
 									<Bot size={20} className="text-white" />
 								</div>
 								<div>
-									<h3 className="font-bold text-white text-sm">AntiGravity AI</h3>
+									<h3 className="font-bold text-white text-sm">CypherAI</h3>
 									<p className="text-xs text-green-400 flex items-center gap-1">
 										<span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
 										Online

@@ -1,6 +1,6 @@
 export const maxDuration = 30;
 
-const SYSTEM_PROMPT = `You are the AI assistant for CypherDocs, a cybersecurity training and interactive documentation platform. Your name is AntiGravity.
+const SYSTEM_PROMPT = `You are the AI assistant for CypherDocs, a cybersecurity training and interactive documentation platform. Your name is CypherAI.
 
 Your mission:
 - Answer cybersecurity-related questions (Linux, networking, web vulnerabilities, CTF, cryptography, etc.)
@@ -94,7 +94,7 @@ export async function POST(req: Request) {
 
 	let fallbackText = "I'm currently unable to reach the AI service. Please try again in 5 seconds.";
 	if (query.match(/(merhaba|selam|hello|hi)/)) {
-		fallbackText = "Hello! I'm your AntiGravity assistant. I can help you with cybersecurity, CTFs, and training modules.";
+		fallbackText = "Hello! I'm your CypherAI assistant. I can help you with cybersecurity, CTFs, and training modules.";
 	} else if (query.match(/(ctf|cft)/)) {
 		fallbackText = "CTF (Capture The Flag) are cybersecurity competitions focusing on skills like cryptography, web security, and reverse engineering. Check the CTF Radar page for active events.";
 	} else if (query.match(/(sql|injection)/)) {
