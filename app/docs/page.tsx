@@ -1,14 +1,20 @@
 "use client";
 
 import Link from "next/link";
-import { BookOpen, Shield, Code, Terminal, Network, Search, Hash, Lock, Database, Globe, FileText, Cpu, Eye, Plus, Check } from "lucide-react";
+import {
+    BookOpen, Shield, Code, Terminal, Network, Search, Hash,
+    Lock, Database, Globe, FileText, Cpu, Eye, Plus, Check, X,
+    Users, Activity, Key
+} from "lucide-react";
 import { useState } from "react";
 import clsx from "clsx";
 import { toast } from "sonner";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function DocsPage() {
     const [activeSection, setActiveSection] = useState("red-team");
     const [savedItems, setSavedItems] = useState<string[]>([]);
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     const addToNotes = (title: string, content: string | string[]) => {
         const userId = localStorage.getItem("cypher_auth");
@@ -31,7 +37,6 @@ export default function DocsPage() {
 
         localStorage.setItem(storageKey, JSON.stringify([newNote, ...existingNotes]));
 
-        // Visual feedback
         setSavedItems(prev => [...prev, title]);
         toast.success("INTELLIGENCE SAVED", { description: "Data transfer to encrypted storage complete." });
 
@@ -40,7 +45,7 @@ export default function DocsPage() {
         }, 2000);
     };
 
-    const sections = {
+    const sections: Record<string, any> = {
         "red-team": {
             title: "Red Team / Offensive",
             icon: Shield,
@@ -204,48 +209,79 @@ export default function DocsPage() {
     };
 
     return (
-        <div className="min-h-screen p-6 font-mono">
+        <div className="min-h-screen p-4 md:p-6 font-mono relative">
             <div className="max-w-7xl mx-auto">
-                <header className="mb-12 border-b border-border pb-6">
-                    <div className="flex items-center gap-2 text-primary mb-2">
-                        <BookOpen size={20} />
-                        <span className="text-sm">CYPERDOCS // KNOWLEDGE_BASE</span>
+                <header className="mb-12 border-b border-border pb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
+                    <div className="flex-1">
+                        <div className="flex items-center gap-2 text-primary mb-2">
+                            <BookOpen size={20} />
+                            <span className="text-sm">CYPERDOCS // KNOWLEDGE_BASE</span>
+                        </div>
+                        <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">Field Manual</h1>
+                        <p className="text-text-muted max-w-2xl text-sm md:text-base">
+                            A curated collection of methodologies, checklists, and references for operatives in the field.
+                        </p>
                     </div>
-                    <h1 className="text-4xl font-bold tracking-tight mb-4">Field Manual</h1>
-                    <p className="text-text-muted max-w-2xl">
-                        A curated collection of methodologies, checklists, and references for operatives in the field.
-                        Select data to encrypt and transfer to your personal dossier.
-                    </p>
+                    <button
+                        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                        className="lg:hidden flex items-center justify-center gap-2 px-4 py-2 bg-primary/10 text-primary border border-primary/20 rounded font-bold transition-all active:scale-95"
+                    >
+                        <Search size={18} />
+                        <span>CHAPTERS</span>
+                    </button>
                 </header>
 
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                    {/* Mobile Menu Backdrop */}
+                    <AnimatePresence>
+                        {isMobileMenuOpen && (
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                onClick={() => setIsMobileMenuOpen(false)}
+                                className="lg:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[45]"
+                            />
+                        )}
+                    </AnimatePresence>
+
                     {/* Sidebar Navigation */}
-                    <div className="lg:col-span-1 space-y-2">
-                        {Object.entries(sections).map(([key, section]) => (
-                            <button
-                                key={key}
-                                onClick={() => setActiveSection(key)}
-                                className={clsx(
-                                    "w-full text-left px-4 py-3 rounded-md flex items-center gap-3 transition-colors",
-                                    activeSection === key
-                                        ? "bg-primary/10 text-primary border border-primary/20"
-                                        : "hover:bg-surface text-text-muted hover:text-text"
-                                )}
-                            >
-                                <section.icon size={18} className={activeSection === key ? section.color : ""} />
-                                <span className="font-bold">{section.title}</span>
-                            </button>
-                        ))}
-                    </div>
+                    <aside className={clsx(
+                        "fixed inset-y-0 left-0 w-72 bg-surface lg:bg-transparent border-r border-border lg:border-none p-6 lg:p-0 z-50 transform transition-transform duration-300 lg:relative lg:translate-x-0 lg:col-span-1 lg:z-auto",
+                        isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
+                    )}>
+                        <div className="flex items-center justify-between mb-8 lg:hidden text-primary">
+                            <span className="font-bold">CHAPTER_INDEX</span>
+                            <button onClick={() => setIsMobileMenuOpen(false)}><X size={20} /></button>
+                        </div>
+
+                        <div className="space-y-2">
+                            {Object.entries(sections).map(([key, section]) => (
+                                <button
+                                    key={key}
+                                    onClick={() => { setActiveSection(key); setIsMobileMenuOpen(false); }}
+                                    className={clsx(
+                                        "w-full text-left px-4 py-3 rounded-md flex items-center gap-3 transition-colors",
+                                        activeSection === key
+                                            ? "bg-primary/10 text-primary border border-primary/20"
+                                            : "hover:bg-surface text-text-muted hover:text-text"
+                                    )}
+                                >
+                                    <section.icon size={18} className={activeSection === key ? section.color : ""} />
+                                    <span className="font-bold">{section.title}</span>
+                                </button>
+                            ))}
+                        </div>
+                    </aside>
 
                     {/* Main Content Area */}
                     <div className="lg:col-span-3">
-                        <h2 className={clsx("text-2xl font-bold mb-6 flex items-center gap-3", sections[activeSection as keyof typeof sections].color)}>
-                            {sections[activeSection as keyof typeof sections].title}
+                        <h2 className={clsx("text-2xl font-bold mb-6 flex items-center gap-3", sections[activeSection].color)}>
+                            {sections[activeSection].title}
                         </h2>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {sections[activeSection as keyof typeof sections].content.map((item: any, i: number) => (
+                            {sections[activeSection].content.map((item: any, i: number) => (
                                 <div key={i} className="bg-surface border border-border rounded-lg p-6 group hover:border-primary/50 transition-colors relative">
                                     <button
                                         onClick={() => addToNotes(item.title, item.items)}
@@ -284,22 +320,5 @@ export default function DocsPage() {
                 </div>
             </div>
         </div>
-    );
-}
-
-// Helper icons
-function Activity({ size, className }: { size?: number, className?: string }) {
-    return (
-        <svg xmlns="http://www.w3.org/2000/svg" width={size || 24} height={size || 24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M22 12h-4l-3 9L9 3l-3 9H2" /></svg>
-    );
-}
-function Users({ size, className }: { size?: number, className?: string }) {
-    return (
-        <svg xmlns="http://www.w3.org/2000/svg" width={size || 24} height={size || 24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
-    );
-}
-function Key({ size, className }: { size?: number, className?: string }) {
-    return (
-        <svg xmlns="http://www.w3.org/2000/svg" width={size || 24} height={size || 24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="m21 2-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0 3 3L22 7l-3-3m-3.5 3.5L19 4" /></svg>
     );
 }

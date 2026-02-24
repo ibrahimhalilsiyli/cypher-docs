@@ -1,42 +1,107 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Copy, RefreshCw, Hash, Code, Network, ArrowRightLeft, Binary, ShieldCheck, Key, Globe, Search } from "lucide-react";
+import { Copy, RefreshCw, Hash, Code, Network, ArrowRightLeft, Binary, ShieldCheck, Key, Globe, Search, X } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
+import clsx from "clsx";
 
 export default function CyberToolsPage() {
 	const [activeTab, setActiveTab] = useState("encoder");
+	const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
 	return (
-		<div className="min-h-screen bg-background text-text font-mono flex flex-col">
-			<header className="border-b border-border bg-surface/50 backdrop-blur-md sticky top-0 z-10">
+		<div className="min-h-screen bg-background text-text font-mono flex flex-col relative">
+			<header className="border-b border-border bg-surface/50 backdrop-blur-md sticky top-0 z-30">
 				<div className="container mx-auto px-4 h-16 flex items-center justify-between">
 					<div className="flex items-center gap-2 text-primary">
 						<Code size={24} />
 						<h1 className="text-xl font-bold tracking-tighter">CYBER_TOOLS_v3.0</h1>
 					</div>
+					<button
+						onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+						className="md:hidden p-2 hover:bg-white/5 rounded-lg text-primary transition-colors"
+					>
+						<Search size={24} />
+					</button>
 				</div>
 			</header>
 
 			<main className="flex-1 container mx-auto px-4 py-8">
 				<div className="flex flex-col md:flex-row gap-8">
+					{/* Mobile Menu Backdrop */}
+					<AnimatePresence>
+						{isMobileMenuOpen && (
+							<motion.div
+								initial={{ opacity: 0 }}
+								animate={{ opacity: 1 }}
+								exit={{ opacity: 0 }}
+								onClick={() => setIsMobileMenuOpen(false)}
+								className="md:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
+							/>
+						)}
+					</AnimatePresence>
+
 					{/* Sidebar / Tabs */}
-					<aside className="w-full md:w-64 flex-shrink-0">
+					<aside className={clsx(
+						"fixed inset-y-0 left-0 w-72 bg-surface md:bg-transparent border-r border-border md:border-none p-6 md:p-0 z-50 transform transition-transform duration-300 md:relative md:translate-x-0 md:w-64 md:z-auto",
+						isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
+					)}>
+						<div className="flex items-center justify-between mb-8 md:hidden text-primary">
+							<span className="font-bold">TOOLS_MENU</span>
+							<button onClick={() => setIsMobileMenuOpen(false)}><X size={20} /></button>
+						</div>
+
 						<nav className="flex flex-col gap-2">
-							<TabButton id="encoder" label="Encoder / Decoder" icon={Code} active={activeTab} set={setActiveTab} />
-							<TabButton id="hasher" label="Hash Generator" icon={Hash} active={activeTab} set={setActiveTab} />
-							<TabButton id="network" label="Subnet Calc" icon={Network} active={activeTab} set={setActiveTab} />
+							<TabButton
+								id="encoder"
+								label="Encoder / Decoder"
+								icon={Code}
+								active={activeTab}
+								set={(id: string) => { setActiveTab(id); setIsMobileMenuOpen(false); }}
+							/>
+							<TabButton
+								id="hasher"
+								label="Hash Generator"
+								icon={Hash}
+								active={activeTab}
+								set={(id: string) => { setActiveTab(id); setIsMobileMenuOpen(false); }}
+							/>
+							<TabButton
+								id="network"
+								label="Subnet Calc"
+								icon={Network}
+								active={activeTab}
+								set={(id: string) => { setActiveTab(id); setIsMobileMenuOpen(false); }}
+							/>
 							<div className="h-px bg-border my-2" />
-							<TabButton id="passwd" label="Password Gen" icon={Key} active={activeTab} set={setActiveTab} />
-							<TabButton id="portscan" label="Port Visualizer" icon={Search} active={activeTab} set={setActiveTab} />
-							<TabButton id="headers" label="Header Analyzer" icon={ShieldCheck} active={activeTab} set={setActiveTab} />
+							<TabButton
+								id="passwd"
+								label="Password Gen"
+								icon={Key}
+								active={activeTab}
+								set={(id: string) => { setActiveTab(id); setIsMobileMenuOpen(false); }}
+							/>
+							<TabButton
+								id="portscan"
+								label="Port Visualizer"
+								icon={Search}
+								active={activeTab}
+								set={(id: string) => { setActiveTab(id); setIsMobileMenuOpen(false); }}
+							/>
+							<TabButton
+								id="headers"
+								label="Header Analyzer"
+								icon={ShieldCheck}
+								active={activeTab}
+								set={(id: string) => { setActiveTab(id); setIsMobileMenuOpen(false); }}
+							/>
 						</nav>
 					</aside>
 
 					{/* Content Area */}
 					<section className="flex-1">
-						<div className="bg-surface border border-border rounded-xl p-6 min-h-[600px] relative overflow-hidden shadow-xl">
+						<div className="bg-surface border border-border rounded-xl p-4 md:p-6 min-h-[600px] relative overflow-hidden shadow-xl">
 							<div className="absolute inset-0 bg-grid-pattern opacity-[0.03] pointer-events-none" />
 
 							{activeTab === "encoder" && <EncoderDecoderTool />}

@@ -5,10 +5,14 @@ import { useSession } from "next-auth/react";
 import { loadWorkspace, saveWorkspace, WorkspaceData, Page } from "@/lib/storage";
 import Sidebar from "@/components/workspace/Sidebar";
 import Editor from "@/components/workspace/Editor";
+import { Terminal as TerminalIcon, X } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import clsx from "clsx";
 
 export default function WorkspacePage() {
 	const [data, setData] = useState<WorkspaceData | null>(null);
 	const [isLoading, setIsLoading] = useState(true);
+	const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
 	const { status } = useSession();
 
@@ -18,11 +22,7 @@ export default function WorkspacePage() {
 
 		const loaded = loadWorkspace();
 		if (!loaded) {
-			// No user or no data (if logic in loadWorkspace returns null for no user)
-			// Double check strict auth
 			const userId = localStorage.getItem("cypher_auth");
-
-			// Check if we are waiting for sync
 			if (!userId && status === "authenticated") {
 				const checkSync = setInterval(() => {
 					if (localStorage.getItem("cypher_auth")) {
@@ -32,9 +32,7 @@ export default function WorkspacePage() {
 				}, 100);
 				return;
 			}
-
 			if (!userId) {
-				// Not logged in -> Redirect
 				window.location.href = "/login";
 				return;
 			}
@@ -51,10 +49,10 @@ export default function WorkspacePage() {
 	}, [data]);
 
 	const createPage = (parentId?: string) => {
-		if (!data) return; // Should not happen if called correctly
+		if (!data) return;
 		const newPage: Page = {
 			id: crypto.randomUUID(),
-			parentId: parentId, // Add parentId here
+			parentId: parentId,
 			title: "",
 			blocks: [
 				{ id: crypto.randomUUID(), type: "text", content: "" }
@@ -66,14 +64,10 @@ export default function WorkspacePage() {
 			if (!prevData) return null;
 			return {
 				...prevData,
-				pages: [newPage, ...prevData.pages], // Add to top
+				pages: [newPage, ...prevData.pages],
 				activePageId: newPage.id
 			};
 		});
-	};
-
-	const handleAddPage = () => {
-		createPage(); // Call createPage without a parentId for a top-level page
 	};
 
 	const handleDeletePage = (id: string) => {
@@ -103,20 +97,49 @@ export default function WorkspacePage() {
 	const activePage = data.pages.find(p => p.id === data.activePageId);
 
 	return (
-		<div className="flex h-screen bg-background text-text font-mono overflow-hidden">
+		<div className="flex h-screen bg-background text-text font-mono overflow-hidden relative">
+			{/* Mobile Sidebar Toggle */}
+			<button
+				onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
+				className="md:hidden fixed bottom-6 right-6 z-[60] p-4 bg-primary text-background rounded-full shadow-2xl hover:scale-110 transition-transform flex items-center justify-center"
+				aria-label="Toggle Mission Log"
+			>
+				{isMobileSidebarOpen ? <X size={24} /> : <TerminalIcon size={24} />}
+			</button>
 
-			<Sidebar
-				pages={data.pages}
-				activePageId={data.activePageId}
-				onSelect={(id) => setData({ ...data, activePageId: id })}
-				onCreate={createPage}
-				onDelete={handleDeletePage}
-			/>
+			{/* Mobile Backdrop */}
+			<AnimatePresence>
+				{isMobileSidebarOpen && (
+					<motion.div
+						initial={{ opacity: 0 }}
+						animate={{ opacity: 1 }}
+						exit={{ opacity: 0 }}
+						onClick={() => setIsMobileSidebarOpen(false)}
+						className="md:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[45]"
+					/>
+				)}
+			</AnimatePresence>
 
-			<div className="flex-1 overflow-auto bg-background/50">
+			<div className={clsx(
+				"fixed inset-y-0 left-0 z-50 transform transition-transform duration-300 md:relative md:translate-x-0 md:z-auto",
+				isMobileSidebarOpen ? "translate-x-0" : "-translate-x-full"
+			)}>
+				<Sidebar
+					pages={data.pages}
+					activePageId={data.activePageId}
+					onSelect={(id) => {
+						setData({ ...data, activePageId: id });
+						setIsMobileSidebarOpen(false); // Close on select
+					}}
+					onCreate={createPage}
+					onDelete={handleDeletePage}
+				/>
+			</div>
+
+			<div className="flex-1 overflow-auto bg-background/50 pt-16 md:pt-0">
 				{activePage ? (
 					<Editor
-						key={activePage.id} // Re-mount editor when switching pages to reset scroll/state
+						key={activePage.id}
 						page={activePage}
 						onUpdate={handleUpdatePage}
 					/>
@@ -133,3 +156,4 @@ export default function WorkspacePage() {
 		</div>
 	);
 }
+
