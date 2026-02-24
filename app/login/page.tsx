@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { Terminal, Lock, ArrowRight, Github } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { signIn, useSession } from "next-auth/react";
@@ -9,7 +9,7 @@ import { useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 
-export default function LoginPage() {
+function LoginContent() {
     const router = useRouter();
     const { data: session, status } = useSession();
     const searchParams = useSearchParams();
@@ -37,20 +37,13 @@ export default function LoginPage() {
         const email = formData.get("email") as string;
         const password = formData.get("password") as string;
 
-        // Simulate API delay
         setTimeout(() => {
-            // Get existing users
             const users = JSON.parse(localStorage.getItem("cypher_users") || "{}");
-
-            // Check credentials
             const user = users[email] || users[email.toLowerCase()];
 
-            // Hardcoded admin for dev
             if ((email === "admin@gmail.com" && password === "admin") || (user && user.password === password)) {
-                // Login success
                 const userId = user ? user.id : "admin-dev-id";
                 if (!user) {
-                    // create makeshift admin user in local storage if not exists for profile name
                     localStorage.setItem("cypher_users", JSON.stringify({
                         ...users,
                         "admin@gmail.com": {
@@ -67,17 +60,14 @@ export default function LoginPage() {
                 window.dispatchEvent(new Event("auth-change"));
                 router.push("/dashboard");
             } else {
-                // Login failed
                 alert("Invalid credentials!");
             }
-
             setIsLoading(false);
         }, 1500);
     };
 
     return (
         <div className="min-h-screen bg-background flex items-center justify-center p-6 relative overflow-hidden">
-            {/* Background Effects */}
             <div className="absolute inset-0 bg-grid-pattern opacity-[0.05] pointer-events-none" />
             <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-background via-transparent to-background pointer-events-none" />
 
@@ -159,7 +149,6 @@ export default function LoginPage() {
                     SIGN IN WITH GOOGLE
                 </button>
 
-
                 <div className="relative my-8">
                     <div className="absolute inset-0 flex items-center">
                         <div className="w-full border-t border-border"></div>
@@ -180,7 +169,15 @@ export default function LoginPage() {
                         Initialize Protocol
                     </Link>
                 </div>
-            </div >
-        </div >
+            </div>
+        </div>
+    );
+}
+
+export default function LoginPage() {
+    return (
+        <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center"><div className="text-text-muted">Loading...</div></div>}>
+            <LoginContent />
+        </Suspense>
     );
 }
