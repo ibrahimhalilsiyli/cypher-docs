@@ -1,78 +1,76 @@
 # CypherDocs
 
-Siber güvenlik eğitimi ve interaktif dokümantasyon platformu. Linux, ağ güvenliği, web açıkları ve daha fazlasını kapsayan adım adım eğitim modülleri, Kali Linux temalı terminal simülatörü ve AI destekli asistan içerir.
+A cybersecurity training and interactive documentation platform. Covers Linux, network security, web vulnerabilities, and more through step-by-step training modules, a Kali Linux-themed terminal simulator, and an AI-powered assistant.
 
-## Özellikler
+## Features
 
-- 📚 Interaktif siber güvenlik eğitim modülleri (Linux, Ağ, Web Güvenliği)
-- 💻 Kali Linux temalı yerleşik terminal simülatörü
-- 🤖 Entegre AI asistan (Google Gemini — opsiyonel)
-- 🔐 Google OAuth ile kimlik doğrulama (NextAuth)
-- 🏆 XP sistemi ve rozet kazanma mekanizması
-- 🌙 Karanlık tema, özelleştirilmiş tasarım
+- 📚 Interactive cybersecurity training modules (Linux, Networking, Web Security)
+- 💻 Built-in Kali Linux-style terminal simulator
+- 🤖 Integrated AI assistant (Google Gemini — optional)
+- 🔐 Google OAuth authentication via NextAuth.js
+- 🏆 XP system with badges and rank progression
+- 🌙 Dark theme with custom design
 
-## Kurulum
+## Getting Started
 
-### 1. Repoyu klonla
+### 1. Clone the repository
 
 ```bash
-git clone https://github.com/KULLANICI_ADIN/cypher-docs.git
+git clone https://github.com/YOUR_USERNAME/cypher-docs.git
 cd cypher-docs
 ```
 
-### 2. Bağımlılıkları yükle
+### 2. Install dependencies
 
 ```bash
 npm install
 ```
 
-### 3. Ortam değişkenlerini ayarla
+### 3. Set up environment variables
 
-`.env.example` dosyasını kopyalayıp `.env.local` olarak yeniden adlandır:
+Copy the example env file and fill in your own values:
 
 ```bash
 cp .env.example .env.local
 ```
 
-Ardından `.env.local` dosyasını düzenle ve kendi değerlerini gir:
-
-| Değişken | Açıklama | Nereden Alınır |
+| Variable | Description | Where to get it |
 |---|---|---|
 | `GOOGLE_CLIENT_ID` | Google OAuth Client ID | [Google Cloud Console](https://console.cloud.google.com/) |
 | `GOOGLE_CLIENT_SECRET` | Google OAuth Secret | Google Cloud Console |
-| `NEXTAUTH_SECRET` | Rastgele güvenli string | `openssl rand -base64 32` |
-| `NEXTAUTH_URL` | Uygulamanın URL'si | Lokalde: `http://localhost:3000` |
-| `DATABASE_URL` | PostgreSQL bağlantı URL'si | Prisma Postgres veya kendi DB'n |
-| `GOOGLE_GENERATIVE_AI_API_KEY` | Gemini AI anahtarı (opsiyonel) | [Google AI Studio](https://aistudio.google.com/app/apikey) |
+| `NEXTAUTH_SECRET` | Random secure string | Run: `openssl rand -base64 32` |
+| `NEXTAUTH_URL` | App base URL | Locally: `http://localhost:3000` |
+| `DATABASE_URL` | PostgreSQL connection string | Prisma Postgres or your own DB |
+| `GOOGLE_GENERATIVE_AI_API_KEY` | Gemini AI key (optional) | [Google AI Studio](https://aistudio.google.com/app/apikey) |
 
-> **Not:** `GOOGLE_GENERATIVE_AI_API_KEY` olmadan chatbot yine çalışır, sadece offline fallback modda yanıt verir.
+> **Note:** The chatbot works without `GOOGLE_GENERATIVE_AI_API_KEY` — it falls back to an offline rule-based mode.
 
-### 4. Veritabanını oluştur
+### 4. Set up the database
 
 ```bash
 npx prisma generate
 npx prisma migrate dev
 ```
 
-### 5. Geliştirme sunucusunu başlat
+### 5. Start the development server
 
 ```bash
 npm run dev
 ```
 
-Tarayıcında [http://localhost:3000](http://localhost:3000) adresini aç.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-## Teknoloji Yığını
+## Tech Stack
 
-| Katman | Teknoloji |
+| Layer | Technology |
 |---|---|
 | Framework | Next.js 15 (App Router) |
-| Dil | TypeScript |
-| Stil | Tailwind CSS + Framer Motion |
+| Language | TypeScript |
+| Styling | Tailwind CSS + Framer Motion |
 | Auth | NextAuth.js (Google OAuth) |
-| Veritabanı | Prisma ORM + PostgreSQL |
+| Database | Prisma ORM + PostgreSQL |
 | AI | Vercel AI SDK + Google Gemini |
 
-## Katkı
+## Contributing
 
-Pull request açabilir, issue oluşturabilirsin. Her türlü katkı hoş gelsin!
+Pull requests and issues are welcome!
