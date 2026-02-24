@@ -76,10 +76,10 @@ export default function RichText({ content, onChange, placeholder, readOnly }: R
 				onMouseUp={handleSelect}
 				onKeyUp={handleSelect}
 				className={clsx(
-					"w-full min-h-[24px] focus:outline-none empty:before:content-[attr(placeholder)] empty:before:text-text-muted/50 leading-relaxed",
+					"w-full min-h-[24px] focus:outline-none empty:before:content-[attr(data-placeholder)] empty:before:text-text-muted/50 leading-relaxed",
 					readOnly ? "cursor-default" : "cursor-text"
 				)}
-				placeholder={placeholder}
+				data-placeholder={placeholder}
 			/>
 		</div>
 	);
