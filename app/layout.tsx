@@ -8,6 +8,7 @@ import Navbar from "@/components/Navbar";
 import CyberBackground from "@/components/CyberBackground";
 import GlobalAiAssistant from "@/components/GlobalAiAssistant";
 import Providers from "@/components/Providers";
+import { Analytics } from "@vercel/analytics/react";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -49,6 +50,7 @@ export default function RootLayout({
             <GlobalBackButton />
           </div>
           <Toaster position="bottom-right" theme="system" />
+          <Analytics />
         </Providers>
       </body>
     </html>

@@ -16,6 +16,7 @@
     "@tiptap/extension-code-block": "^3.19.0",
     "@tiptap/react": "^3.19.0",
     "@tiptap/starter-kit": "^3.19.0",
+    "@vercel/analytics": "^1.6.1",
     "ai": "^6.0.86",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
