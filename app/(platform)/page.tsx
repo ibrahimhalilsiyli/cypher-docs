@@ -7,33 +7,33 @@ export default function LandingPage() {
 
             <main className="flex-1">
                 {/* Hero Section */}
-                <section className="py-20 md:py-32 px-6 border-b border-border bg-grid-pattern relative overflow-hidden">
+                <section className="py-16 md:py-32 px-4 md:px-6 border-b border-border bg-grid-pattern relative overflow-hidden">
                     <div className="max-w-4xl mx-auto text-center relative z-10">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-mono mb-6">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] md:text-xs font-mono mb-6">
                             <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
                             v2.0 RELEASED
                         </div>
 
-                        <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-6 text-text">
+                        <h1 className="text-4xl md:text-7xl font-bold tracking-tight mb-6 text-text scale-[0.9] md:scale-100 origin-center">
                             Master the Art of <br />
                             <span className="text-primary">Cybersecurity</span>
                         </h1>
 
-                        <p className="text-xl text-text-muted mb-10 max-w-2xl mx-auto leading-relaxed">
+                        <p className="text-lg md:text-xl text-text-muted mb-10 max-w-2xl mx-auto leading-relaxed px-2">
                             The premier platform for security professionals.
                             Interactive labs, structured documentation, and a community of elite hackers.
                         </p>
 
-                        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 px-6 md:px-0">
                             <Link
                                 href="/training"
-                                className="px-8 py-4 rounded-md bg-primary text-white font-bold hover:bg-primary-hover transition-all flex items-center gap-2"
+                                className="w-full sm:w-auto px-8 py-4 rounded-md bg-primary text-white font-bold hover:bg-primary-hover transition-all flex items-center justify-center gap-2 text-center"
                             >
                                 Start Training <ChevronRight size={16} />
                             </Link>
                             <Link
                                 href="/docs"
-                                className="px-8 py-4 rounded-md bg-surface border border-border hover:border-primary/50 transition-all font-mono"
+                                className="w-full sm:w-auto px-8 py-4 rounded-md bg-surface border border-border hover:border-primary/50 transition-all font-mono text-center"
                             >
                                 Read the Docs
                             </Link>

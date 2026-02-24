@@ -221,13 +221,15 @@ export default function CTFRadarPage() {
 											<div className="absolute top-0 left-0 w-1 h-full bg-primary animate-pulse" />
 										)}
 
-										<div className="flex flex-col md:flex-row gap-6">
+										<div className="flex flex-col md:flex-row gap-4 md:gap-6">
 											{/* Date / Status Box */}
-											<div className="md:w-24 shrink-0 flex flex-col items-center justify-center bg-black/20 rounded border border-white/5 p-2">
-												<div className="text-xs text-text-muted uppercase mb-1">{new Date(event.start).toLocaleString('default', { month: 'short' })}</div>
-												<div className="text-2xl font-bold text-white">{new Date(event.start).getDate()}</div>
+											<div className="w-full md:w-24 shrink-0 flex flex-row md:flex-col items-center justify-between md:justify-center bg-black/20 rounded border border-white/5 p-3 md:p-2">
+												<div className="flex flex-row md:flex-col items-center gap-2 md:gap-0">
+													<div className="text-xs text-text-muted uppercase md:mb-1">{new Date(event.start).toLocaleString('default', { month: 'short' })}</div>
+													<div className="text-xl md:text-2xl font-bold text-white">{new Date(event.start).getDate()}</div>
+												</div>
 												<div className={clsx(
-													"mt-2 text-[10px] px-1.5 py-0.5 rounded font-bold uppercase w-full text-center",
+													"text-[10px] px-2 py-1 rounded font-bold uppercase w-auto md:w-full text-center",
 													event.status === "Active" ? "bg-green-500/20 text-green-500" :
 														event.status === "Upcoming" ? "bg-yellow-500/20 text-yellow-500" : "bg-zinc-500/20 text-zinc-500"
 												)}>
@@ -235,12 +237,12 @@ export default function CTFRadarPage() {
 												</div>
 											</div>
 
-											<div className="flex-1">
-												<div className="flex justify-between items-start">
-													<h3 className="text-xl font-bold text-white group-hover:text-primary transition-colors cursor-pointer flex items-center gap-2">
-														{event.format === "Jeopardy" ? <Flag size={18} /> :
-															event.format === "Attack-Defense" ? <Trophy size={18} /> :
-																<Globe size={18} />}
+											<div className="flex-1 min-w-0">
+												<div className="flex justify-between items-start gap-4">
+													<h3 className="text-lg md:text-xl font-bold text-white group-hover:text-primary transition-colors cursor-pointer flex items-center gap-2 truncate">
+														{event.format === "Jeopardy" ? <Flag size={16} /> :
+															event.format === "Attack-Defense" ? <Trophy size={16} /> :
+																<Globe size={16} />}
 														{event.name}
 													</h3>
 

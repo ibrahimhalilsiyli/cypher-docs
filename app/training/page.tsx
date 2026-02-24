@@ -69,18 +69,18 @@ export default function TrainingPage() {
                             <section key={category} className="border border-border rounded-lg bg-surface/50 overflow-hidden transition-all">
                                 <button
                                     onClick={() => toggleCategory(category)}
-                                    className="w-full flex items-center justify-between p-6 hover:bg-surface transition-colors text-left"
+                                    className="w-full flex items-center justify-between p-4 md:p-6 hover:bg-surface transition-colors text-left"
                                 >
-                                    <div className="flex items-center gap-4">
-                                        <div className={clsx("p-2 rounded-lg bg-primary/10 text-primary transition-transform duration-300", isExpanded && "rotate-90")}>
-                                            <ChevronRight size={20} />
+                                    <div className="flex items-center gap-3 md:gap-4 overflow-hidden">
+                                        <div className={clsx("p-1.5 md:p-2 rounded-lg bg-primary/10 text-primary transition-transform duration-300", isExpanded && "rotate-90")}>
+                                            <ChevronRight size={18} />
                                         </div>
-                                        <div>
-                                            <h2 className="text-xl font-bold text-text">{category}</h2>
-                                            <p className="text-text-muted text-sm">{categoryModules.length} Modules Available</p>
+                                        <div className="min-w-0">
+                                            <h2 className="text-lg md:text-xl font-bold text-text truncate">{category}</h2>
+                                            <p className="text-text-muted text-[10px] md:text-sm">{categoryModules.length} Modules Available</p>
                                         </div>
                                     </div>
-                                    <div className="text-text-muted text-sm font-mono">
+                                    <div className="hidden sm:block text-text-muted text-[10px] md:text-sm font-mono whitespace-nowrap ml-4">
                                         {isExpanded ? "COLLAPSE [-]" : "EXPAND [+]"}
                                     </div>
                                 </button>

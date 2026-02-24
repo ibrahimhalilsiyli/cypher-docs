@@ -107,8 +107,10 @@
 }
 
 @layer base {
+
+  html,
   body {
-    @apply bg-background text-text antialiased transition-colors duration-300;
+    @apply bg-background text-text antialiased transition-colors duration-300 overflow-x-hidden;
   }
 }
 

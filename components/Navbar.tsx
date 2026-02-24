@@ -1,16 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { Terminal, LogOut, User } from "lucide-react";
+import { Terminal, LogOut, User, Menu, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
+import { motion, AnimatePresence } from "framer-motion";
 
 import { ThemeToggle } from "@/components/ThemeToggle";
 
 export default function Navbar() {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [username, setUsername] = useState("");
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const router = useRouter();
     const { data: session } = useSession();
 
@@ -46,20 +48,29 @@ export default function Navbar() {
         router.push("/");
     };
 
+    const navLinks = [
+        { href: "/docs", label: "Documentation" },
+        { href: "/training", label: "Training" },
+        { href: "/tools", label: "Cyber Tools" },
+        { href: "/workspace", label: "Workspace" },
+        { href: "/ctf-radar", label: "CTF Radar" },
+    ];
+
     return (
         <nav className="border-b border-border bg-surface/50 backdrop-blur-sm sticky top-0 z-50">
-            <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+            <div className="max-w-7xl mx-auto px-4 md:px-6 h-16 flex items-center justify-between">
                 <Link href="/" className="flex items-center gap-2 font-mono font-bold text-lg text-primary hover:opacity-80 transition-opacity">
                     <Terminal size={20} />
                     <span>CypherDocs</span>
                 </Link>
-                <div className="flex items-center gap-6 text-sm font-medium">
-                    <Link href="/docs" className="hover:text-primary transition-colors">Documentation</Link>
-                    <Link href="/training" className="hover:text-primary transition-colors">Training</Link>
-                    <Link href="/tools" className="hover:text-primary transition-colors">Cyber Tools</Link>
-                    <Link href="/workspace" className="hover:text-primary transition-colors">Workspace</Link>
-                    <Link href="/ctf-radar" className="hover:text-primary transition-colors">CTF Radar</Link>
 
+                {/* Desktop Navigation */}
+                <div className="hidden md:flex items-center gap-6 text-sm font-medium">
+                    {navLinks.map(link => (
+                        <Link key={link.href} href={link.href} className="hover:text-primary transition-colors">
+                            {link.label}
+                        </Link>
+                    ))}
 
                     <ThemeToggle />
                     <div className="w-px h-6 bg-border mx-2" />
@@ -88,7 +99,80 @@ export default function Navbar() {
                         </Link>
                     )}
                 </div>
+
+                {/* Mobile Controls */}
+                <div className="flex md:hidden items-center gap-4">
+                    <ThemeToggle />
+                    <button
+                        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                        className="p-2 text-text hover:text-primary transition-colors"
+                        aria-label="Toggle menu"
+                    >
+                        {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                    </button>
+                </div>
             </div>
+
+            {/* Mobile Menu Overlay */}
+            <AnimatePresence>
+                {isMobileMenuOpen && (
+                    <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="md:hidden border-t border-border bg-surface overflow-hidden"
+                    >
+                        <div className="flex flex-col p-4 gap-4">
+                            {navLinks.map(link => (
+                                <Link
+                                    key={link.href}
+                                    href={link.href}
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                    className="text-lg font-medium hover:text-primary transition-colors py-2"
+                                >
+                                    {link.label}
+                                </Link>
+                            ))}
+                            <div className="h-px bg-border my-2" />
+                            {isAuthenticated ? (
+                                <>
+                                    <Link
+                                        href="/dashboard"
+                                        onClick={() => setIsMobileMenuOpen(false)}
+                                        className="flex items-center gap-3 text-lg font-medium py-2"
+                                    >
+                                        <Terminal size={18} /> Dashboard
+                                    </Link>
+                                    <Link
+                                        href="/profile"
+                                        onClick={() => setIsMobileMenuOpen(false)}
+                                        className="flex items-center gap-3 text-lg font-medium py-2"
+                                    >
+                                        <User size={18} /> Profile ({username || "USER"})
+                                    </Link>
+                                    <button
+                                        onClick={() => {
+                                            handleLogout();
+                                            setIsMobileMenuOpen(false);
+                                        }}
+                                        className="flex items-center gap-3 text-lg font-medium text-red-400 py-2"
+                                    >
+                                        <LogOut size={18} /> Sign Out
+                                    </button>
+                                </>
+                            ) : (
+                                <Link
+                                    href="/login"
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                    className="w-full text-center py-3 rounded-md bg-primary text-white font-bold"
+                                >
+                                    Sign In
+                                </Link>
+                            )}
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </nav>
     );
 }
