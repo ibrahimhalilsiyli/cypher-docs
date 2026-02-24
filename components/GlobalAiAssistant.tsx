@@ -4,29 +4,27 @@ import React, { useState, useRef, useEffect } from "react";
 import { MessageSquare, X, Send, Bot, Sparkles, User } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import clsx from "clsx";
-import { useChat } from "@ai-sdk/react";
+
+interface Message {
+	id: string;
+	role: "user" | "assistant";
+	content: string;
+}
 
 export default function GlobalAiAssistant() {
 	const [isOpen, setIsOpen] = useState(false);
 	const [localInput, setLocalInput] = useState("");
+	const [isLoading, setIsLoading] = useState(false);
+	const [error, setError] = useState<string | null>(null);
+	const [messages, setMessages] = useState<Message[]>([
+		{
+			id: "welcome",
+			role: "assistant",
+			content:
+				"Merhaba! Ben AntiGravity asistanıyım. Siber güvenlik ve site yönetimi ile ilgili sorularını yanıtlamaya hazırım. Nasıl yardımcı olabilirim?",
+		},
+	]);
 	const scrollRef = useRef<HTMLDivElement>(null);
-
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	const { messages, append, sendMessage, isLoading, error, setMessages } = useChat({
-		api: "/api/chat",
-	}) as any;
-
-	useEffect(() => {
-		if (messages.length === 0) {
-			setMessages([
-				{
-					id: "welcome",
-					role: "assistant",
-					content: "Merhaba! Ben AntiGravity asistanıyım. Siber güvenlik ve site yönetimi ile ilgili sorularını yanıtlamaya hazırım. Nasıl yardımcı olabilirim?",
-				},
-			]);
-		}
-	}, []);
 
 	useEffect(() => {
 		if (scrollRef.current) {
@@ -38,18 +36,67 @@ export default function GlobalAiAssistant() {
 		e.preventDefault();
 		if (!localInput.trim() || isLoading) return;
 
-		const userMessage = localInput;
-		setLocalInput(""); // Clear immediately
+		const userMessage = localInput.trim();
+		setLocalInput("");
+		setError(null);
 
-		const messagePayload = {
+		const userMsg: Message = {
+			id: Date.now().toString(),
 			role: "user",
 			content: userMessage,
 		};
 
-		if (append) {
-			await append(messagePayload);
-		} else if (sendMessage) {
-			await sendMessage(messagePayload);
+		const updatedMessages = [...messages, userMsg];
+		setMessages(updatedMessages);
+		setIsLoading(true);
+
+		try {
+			const response = await fetch("/api/chat", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({
+					messages: updatedMessages.map((m) => ({
+						role: m.role,
+						content: m.content,
+					})),
+				}),
+			});
+
+			if (!response.ok) {
+				const errData = await response.json().catch(() => ({}));
+				throw new Error(errData.error || "API yanıt vermedi.");
+			}
+
+			const reader = response.body?.getReader();
+			const decoder = new TextDecoder();
+
+			const assistantMsg: Message = {
+				id: (Date.now() + 1).toString(),
+				role: "assistant",
+				content: "",
+			};
+
+			setMessages((prev) => [...prev, assistantMsg]);
+
+			if (reader) {
+				while (true) {
+					const { done, value } = await reader.read();
+					if (done) break;
+					const chunk = decoder.decode(value, { stream: true });
+					setMessages((prev) => {
+						const last = prev[prev.length - 1];
+						if (last.role === "assistant") {
+							return [...prev.slice(0, -1), { ...last, content: last.content + chunk }];
+						}
+						return prev;
+					});
+				}
+			}
+		} catch (err) {
+			setError("Bir sorun oluştu, lütfen tekrar dene.");
+			console.error(err);
+		} finally {
+			setIsLoading(false);
 		}
 	};
 
@@ -104,7 +151,10 @@ export default function GlobalAiAssistant() {
 						</div>
 
 						{/* Chat Area */}
-						<div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-transparent bg-[#111111]" ref={scrollRef}>
+						<div
+							className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-transparent bg-[#111111]"
+							ref={scrollRef}
+						>
 							{messages.map((msg) => (
 								<div
 									key={msg.id}
@@ -116,14 +166,20 @@ export default function GlobalAiAssistant() {
 									<div
 										className={clsx(
 											"w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-md",
-											msg.role === "user" ? "bg-zinc-700" : "bg-gradient-to-br from-blue-600 to-purple-700"
+											msg.role === "user"
+												? "bg-zinc-700"
+												: "bg-gradient-to-br from-blue-600 to-purple-700"
 										)}
 									>
-										{msg.role === "user" ? <User size={16} /> : <Sparkles size={16} />}
+										{msg.role === "user" ? (
+											<User size={16} />
+										) : (
+											<Sparkles size={16} />
+										)}
 									</div>
 									<div
 										className={clsx(
-											"p-3 rounded-2xl text-sm leading-relaxed shadow-sm",
+											"p-3 rounded-2xl text-sm leading-relaxed shadow-sm whitespace-pre-wrap",
 											msg.role === "user"
 												? "bg-zinc-800 text-zinc-100 rounded-tr-none"
 												: "bg-gradient-to-br from-zinc-800 to-zinc-900 text-zinc-200 border border-zinc-700/50 rounded-tl-none"
@@ -133,15 +189,25 @@ export default function GlobalAiAssistant() {
 									</div>
 								</div>
 							))}
+
 							{isLoading && (
 								<div className="flex gap-3 max-w-[85%]">
 									<div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-600 to-purple-700 flex items-center justify-center shrink-0">
 										<Sparkles size={16} />
 									</div>
 									<div className="bg-zinc-800 p-4 rounded-2xl rounded-tl-none flex gap-1 items-center">
-										<span className="w-2 h-2 bg-zinc-500 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-										<span className="w-2 h-2 bg-zinc-500 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-										<span className="w-2 h-2 bg-zinc-500 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+										<span
+											className="w-2 h-2 bg-zinc-500 rounded-full animate-bounce"
+											style={{ animationDelay: "0ms" }}
+										/>
+										<span
+											className="w-2 h-2 bg-zinc-500 rounded-full animate-bounce"
+											style={{ animationDelay: "150ms" }}
+										/>
+										<span
+											className="w-2 h-2 bg-zinc-500 rounded-full animate-bounce"
+											style={{ animationDelay: "300ms" }}
+										/>
 									</div>
 								</div>
 							)}
@@ -149,14 +215,16 @@ export default function GlobalAiAssistant() {
 
 						{error && (
 							<div className="p-4 bg-red-900/20 border-t border-red-900/50 text-red-200 text-xs text-center">
-								<p>⚠️ Bir hata oluştu.</p>
-								<p className="opacity-75">{error.message}</p>
+								<p>⚠️ {error}</p>
 							</div>
 						)}
 
 						{/* Input Area */}
 						<div className="p-4 bg-zinc-900 border-t border-zinc-800">
-							<form onSubmit={handleLocalSubmit} className="relative flex items-center gap-2">
+							<form
+								onSubmit={handleLocalSubmit}
+								className="relative flex items-center gap-2"
+							>
 								<input
 									type="text"
 									value={localInput}
@@ -173,7 +241,9 @@ export default function GlobalAiAssistant() {
 								</button>
 							</form>
 							<div className="text-center mt-2">
-								<p className="text-[10px] text-zinc-600">CypherDocs AI · Güçlendirilmiş asistan</p>
+								<p className="text-[10px] text-zinc-600">
+									CypherDocs AI · Güçlendirilmiş asistan
+								</p>
 							</div>
 						</div>
 					</motion.div>

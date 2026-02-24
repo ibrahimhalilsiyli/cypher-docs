@@ -1,8 +1,16 @@
-import { google } from "@ai-sdk/google";
-import { streamText } from "ai";
-
-// Allow streaming responses up to 30 seconds
 export const maxDuration = 30;
+
+const SYSTEM_PROMPT = `Sen CypherDocs adlı bir siber güvenlik eğitim platformunun AI asistanısın. Adın AntiGravity.
+
+Görevin:
+- Siber güvenlik sorularını yanıtlamak (Linux, ağ güvenliği, web açıkları, CTF, kriptografi, vs.)
+- Platformdaki eğitim modüllerini tanıtmak ve yönlendirmek
+- Kısa, net ve teknik ama anlaşılır cevaplar vermek
+- Türkçe sorulara Türkçe, İngilizce sorulara İngilizce cevap vermek
+
+Platform modülleri: Linux 101, Network Recon, SQL Injection, XSS, CSRF, LFI, Metasploit, Wireshark, Burp Suite, Hashcat, Cryptography, Malware Analysis ve daha fazlası.
+
+Cevaplarını kısa ve öz tut (kod snippet'i istenmedikçe max 4-5 cümle).`;
 
 export async function POST(req: Request) {
 	const { messages } = await req.json();
@@ -11,80 +19,99 @@ export async function POST(req: Request) {
 
 	if (apiKey) {
 		try {
-			const result = await streamText({
-				model: google("gemini-1.5-flash"),
-				system: `You are AntiGravity, a helpful AI assistant for a cybersecurity training platform called CypherDocs.
-        Your tone should be professional, encouraging, and slightly technical but accessible.
-        You can help users with:
-        - Navigating the website (Training, Docs, Tools).
-        - Explaining cybersecurity concepts (Linux, Networking, Web Vulnerabilities).
-        - Providing short code snippets (HTML, CSS, Python, Bash).
-        - Site management advice (Widgets, Themes, Layouts).
-        Keep responses concise (max 3-4 sentences unless a code snippet is requested).`,
-				messages: messages.map((m: any) => ({
-					role: m.role,
-					content: m.content,
-				})),
+			// Direct Gemini REST API call - bypasses SDK version issues
+			const geminiMessages = messages.map((m: { role: string; content: string }) => ({
+				role: m.role === "assistant" ? "model" : "user",
+				parts: [{ text: m.content }],
+			}));
+
+			const response = await fetch(
+				`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:streamGenerateContent?alt=sse&key=${apiKey}`,
+				{
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({
+						system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
+						contents: geminiMessages,
+						generationConfig: { maxOutputTokens: 512 },
+					}),
+				}
+			);
+
+			if (!response.ok) {
+				const errText = await response.text();
+				console.error("Gemini API error:", errText);
+				throw new Error(`Gemini error: ${response.status}`);
+			}
+
+			// Stream the SSE response — parse "data: {...}" lines and forward text chunks
+			const encoder = new TextEncoder();
+			const readable = new ReadableStream({
+				async start(controller) {
+					const reader = response.body?.getReader();
+					const decoder = new TextDecoder();
+					if (!reader) { controller.close(); return; }
+
+					let buffer = "";
+					while (true) {
+						const { done, value } = await reader.read();
+						if (done) break;
+
+						buffer += decoder.decode(value, { stream: true });
+						const lines = buffer.split("\n");
+						buffer = lines.pop() ?? "";
+
+						for (const line of lines) {
+							if (!line.startsWith("data: ")) continue;
+							const json = line.slice(6).trim();
+							if (json === "[DONE]") continue;
+							try {
+								const parsed = JSON.parse(json);
+								const text = parsed?.candidates?.[0]?.content?.parts?.[0]?.text;
+								if (text) {
+									// Encode as plain text
+									controller.enqueue(encoder.encode(text));
+								}
+							} catch { /* skip malformed */ }
+						}
+					}
+					controller.close();
+				},
 			});
 
-			return result.toDataStreamResponse();
+			return new Response(readable, {
+				headers: { "Content-Type": "text/plain; charset=utf-8" },
+			});
 		} catch (error) {
 			console.error("Chat API error:", error);
+			// Fall through to offline fallback
 		}
 	}
 
-	// Offline fallback — rule-based responses when the API key is unavailable
+	// Offline fallback
 	const lastMessage = messages[messages.length - 1];
-	const query = lastMessage.content.toLowerCase();
-	let responseText = "Emin değilim, ama dokümantasyon sayfamızda aradığını bulabilirsin.";
+	const query = (lastMessage?.content || "").toLowerCase();
 
-	if (query.match(/\b(merhaba|selam|nasılsın|kimsin|nedir)\b/)) {
-		const responses = [
-			"Merhaba! Ben AntiGravity asistanıyım. Web sitesi yönetimi ve siber güvenlik konularında size yardımcı olabilirim.",
-			"Selamlar! Size nasıl destek olabilirim? Tasarım, güvenlik veya kodlama hakkında soru sorabilirsiniz.",
-			"Merhaba, ben buradayım! Site düzeni veya siber güvenlik dersleri hakkında merak ettiklerinizi cevaplayabilirim."
-		];
-		responseText = responses[Math.floor(Math.random() * responses.length)];
-	} else if (query.match(/\b(tasarım|düzen|widget|renk|tema|görünüm|logo|font)\b/)) {
-		if (query.includes("widget")) responseText = "Widget eklemek için yönetim panelinden 'Bileşenler' sekmesine gidin. Oradan sürükle-bırak yöntemiyle istediğiniz widget'ı sayfanıza ekleyebilirsiniz.";
-		else if (query.includes("renk") || query.includes("tema")) responseText = "Tema renklerini 'Görünüm > Özelleştir' menüsünden değiştirebilirsiniz. CSS ile daha detaylı kontrol için Custom Code alanını kullanın.";
-		else responseText = "Web sitesi tasarımı, kullanıcı deneyimini doğrudan etkiler. Modern, temiz ve mobil uyumlu bir düzen tercih etmelisiniz.";
-	} else if (query.match(/\b(siber|güvenlik|hack|zafiyet|linux|ağ|network|sql|xss|csrf|burp|nmap)\b/)) {
-		if (query.includes("linux")) responseText = "Linux, siber güvenlikçilerin ana işletim sistemidir. Terminal komutlarını öğrenmek için 'Linux 101' eğitim modülümüzü tamamlamanızı öneririm.";
-		else if (query.includes("sql")) responseText = "SQL Injection, veritabanı sorgularına müdahale edilmesini sağlar. Korunmak için 'Prepared Statements' ve girdi doğrulama kullanmalısınız.";
-		else if (query.includes("xss")) responseText = "XSS (Cross-Site Scripting), saldırganın tarayıcıda kod çalıştırmasına neden olur. Girdi temizleme (sanitization) ve CSP kullanımı kritiktir.";
-		else responseText = "Siber güvenlik geniş bir alandır. Başlangıç için Temel Linux ve Ağ Güvenliği modüllerimizi inceleyebilirsin. Etik kurallara bağlı kalmayı unutma!";
-	} else if (query.match(/\b(kod|snippet|html|css|js|javascript|python|yazılım)\b/)) {
-		if (query.includes("html") || query.includes("buton")) responseText = "Örnek Buton Kodu:\n`<button class='my-btn'>Tıkla</button>`\nBunu Custom Code alanına ekleyip CSS ile stil verebilirsin.";
-		else if (query.includes("css") || query.includes("stil")) responseText = "Örnek CSS:\n`.my-img { border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }`\nBu kod görsellere modern bir görünüm kazandırır.";
-		else if (query.includes("python")) responseText = "Python Port Tarama (Basit):\n`import socket`\n`s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)`\n`s.connect(('127.0.0.1', 80))`\nBu kodu sadece izinli sistemlerde kullan!";
-		else responseText = "Kod yazarken temiz ve anlaşılır olmaya özen gösterin. İhtiyacınız olan dilde (HTML, CSS, Python) size örnek snippet'ler verebilirim.";
-	} else {
-		const fallbacks = [
-			"Bu konuda emin değilim, ama dokümantasyon sayfamızda aradığınız cevabı bulabilirsiniz.",
-			"İlginç bir soru! Şu an veritabanımda bununla ilgili net bir bilgi yok, ancak siber güvenlik veya site tasarımı hakkında başka sorularını yanıtlayabilirim.",
-			"Bunu daha farklı bir şekilde sorabilir misin? Belki soruyu 'tasarım' veya 'güvenlik' bağlamında detaylandırırsan yardımcı olabilirim.",
-			"Anlaşıldı. Bu konuyla ilgili daha fazla detay verebilir misin? Özellikle neyi öğrenmek istiyorsun?"
-		];
-		responseText = fallbacks[Math.floor(Math.random() * fallbacks.length)];
+	let fallbackText = "Şu an yapay zeka servisine ulaşamıyorum. Lütfen birkaç saniye sonra tekrar dene.";
+	if (query.match(/(merhaba|selam|hello|hi)/)) {
+		fallbackText = "Merhaba! Ben AntiGravity asistanıyım. Siber güvenlik, CTF ve eğitim modülleri hakkında sorularını yanıtlayabilirim.";
+	} else if (query.match(/(ctf|cft)/)) {
+		fallbackText = "CTF (Capture The Flag), siber güvenlik yarışmalarıdır. Kriptografi, web açıkları, tersine mühendislik gibi beceriler kullanılır. CTF Radar sayfasında aktif yarışmaları takip edebilirsin.";
+	} else if (query.match(/(sql|injection)/)) {
+		fallbackText = "SQL Injection, veritabanı sorgularına saldırı yapılmasıdır. Korunmak için Prepared Statements şarttır. Training > SQL Injection modülüne bak.";
+	} else if (query.match(/(linux|terminal|bash)/)) {
+		fallbackText = "Linux, siber güvenliğin temelidir. Training > Linux 101 modülüyle başla.";
 	}
 
-	// Stream the fallback response character-by-character to match the Vercel AI SDK data stream protocol
 	const encoder = new TextEncoder();
 	const customStream = new ReadableStream({
 		async start(controller) {
-			const chars = responseText.split("");
-
-			for (const char of chars) {
-				const part = `0:${JSON.stringify(char)}\n`;
-				controller.enqueue(encoder.encode(part));
-				await new Promise((resolve) => setTimeout(resolve, 15 + Math.random() * 30));
-			}
+			controller.enqueue(encoder.encode(fallbackText));
 			controller.close();
 		},
 	});
 
 	return new Response(customStream, {
-		headers: { "Content-Type": "text/plain; charset=utf-8", "X-Vercel-AI-Data-Stream": "v1" },
+		headers: { "Content-Type": "text/plain; charset=utf-8" },
 	});
 }

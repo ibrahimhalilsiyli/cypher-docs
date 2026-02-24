@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Terminal, LogOut, User } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 import { ThemeToggle } from "@/components/ThemeToggle";
 
@@ -11,6 +12,7 @@ export default function Navbar() {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [username, setUsername] = useState("");
     const router = useRouter();
+    const { data: session } = useSession();
 
     useEffect(() => {
         const checkAuth = () => {
@@ -70,7 +72,7 @@ export default function Navbar() {
                             </Link>
                             <Link href="/profile" className="flex items-center gap-2 px-3 py-1 rounded-full bg-surface border border-border hover:border-primary/50 hover:text-primary transition-all text-xs font-mono">
                                 <User size={14} />
-                                {username || "USER"}
+                                {username || session?.user?.name?.split(" ")[0] || "USER"}
                             </Link>
                             <button
                                 onClick={handleLogout}
