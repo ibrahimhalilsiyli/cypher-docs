@@ -21,7 +21,7 @@ export default function GlobalAiAssistant() {
 			id: "welcome",
 			role: "assistant",
 			content:
-				"Merhaba! Ben AntiGravity asistanıyım. Siber güvenlik ve site yönetimi ile ilgili sorularını yanıtlamaya hazırım. Nasıl yardımcı olabilirim?",
+				"Hello! I'm your AntiGravity assistant. I'm ready to answer any questions about cybersecurity and the site. How can I help you today?",
 		},
 	]);
 	const scrollRef = useRef<HTMLDivElement>(null);
@@ -64,7 +64,7 @@ export default function GlobalAiAssistant() {
 
 			if (!response.ok) {
 				const errData = await response.json().catch(() => ({}));
-				throw new Error(errData.error || "API yanıt vermedi.");
+				throw new Error(errData.error || "API did not respond.");
 			}
 
 			const reader = response.body?.getReader();
@@ -93,7 +93,7 @@ export default function GlobalAiAssistant() {
 				}
 			}
 		} catch (err) {
-			setError("Bir sorun oluştu, lütfen tekrar dene.");
+			setError("Something went wrong, please try again.");
 			console.error(err);
 		} finally {
 			setIsLoading(false);
@@ -138,7 +138,7 @@ export default function GlobalAiAssistant() {
 									<h3 className="font-bold text-white text-sm">AntiGravity AI</h3>
 									<p className="text-xs text-green-400 flex items-center gap-1">
 										<span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-										Çevrimiçi
+										Online
 									</p>
 								</div>
 							</div>
@@ -229,7 +229,7 @@ export default function GlobalAiAssistant() {
 									type="text"
 									value={localInput}
 									onChange={(e) => setLocalInput(e.target.value)}
-									placeholder="Bir soru sorun..."
+									placeholder="Ask a question..."
 									className="w-full bg-black/50 border border-zinc-700 text-white rounded-xl py-3 pl-4 pr-12 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/50 transition-all placeholder:text-zinc-600 text-sm"
 								/>
 								<button
@@ -242,7 +242,7 @@ export default function GlobalAiAssistant() {
 							</form>
 							<div className="text-center mt-2">
 								<p className="text-[10px] text-zinc-600">
-									CypherDocs AI · Güçlendirilmiş asistan
+									CypherDocs AI · Powerful assistant
 								</p>
 							</div>
 						</div>

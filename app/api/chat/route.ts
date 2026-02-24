@@ -1,16 +1,16 @@
 export const maxDuration = 30;
 
-const SYSTEM_PROMPT = `Sen CypherDocs adlı bir siber güvenlik eğitim platformunun AI asistanısın. Adın AntiGravity.
+const SYSTEM_PROMPT = `You are the AI assistant for CypherDocs, a cybersecurity training and interactive documentation platform. Your name is AntiGravity.
 
-Görevin:
-- Siber güvenlik sorularını yanıtlamak (Linux, ağ güvenliği, web açıkları, CTF, kriptografi, vs.)
-- Platformdaki eğitim modüllerini tanıtmak ve yönlendirmek
-- Kısa, net ve teknik ama anlaşılır cevaplar vermek
-- Türkçe sorulara Türkçe, İngilizce sorulara İngilizce cevap vermek
+Your mission:
+- Answer cybersecurity-related questions (Linux, networking, web vulnerabilities, CTF, cryptography, etc.)
+- Introduce and guide users through platform training modules.
+- Provide crisp, technical yet understandable answers.
+- Always respond in English unless the user specifically asks otherwise.
 
-Platform modülleri: Linux 101, Network Recon, SQL Injection, XSS, CSRF, LFI, Metasploit, Wireshark, Burp Suite, Hashcat, Cryptography, Malware Analysis ve daha fazlası.
+Platform Modules: Linux 101, Network Recon, SQL Injection, XSS, CSRF, LFI, Metasploit, Wireshark, Burp Suite, Hashcat, Cryptography, Malware Analysis, and more.
 
-Cevaplarını kısa ve öz tut (kod snippet'i istenmedikçe max 4-5 cümle).`;
+Keep answers concise (max 4-5 sentences unless code snippets are requested).`;
 
 export async function POST(req: Request) {
 	const { messages } = await req.json();
@@ -92,15 +92,15 @@ export async function POST(req: Request) {
 	const lastMessage = messages[messages.length - 1];
 	const query = (lastMessage?.content || "").toLowerCase();
 
-	let fallbackText = "Şu an yapay zeka servisine ulaşamıyorum. Lütfen birkaç saniye sonra tekrar dene.";
+	let fallbackText = "I'm currently unable to reach the AI service. Please try again in 5 seconds.";
 	if (query.match(/(merhaba|selam|hello|hi)/)) {
-		fallbackText = "Merhaba! Ben AntiGravity asistanıyım. Siber güvenlik, CTF ve eğitim modülleri hakkında sorularını yanıtlayabilirim.";
+		fallbackText = "Hello! I'm your AntiGravity assistant. I can help you with cybersecurity, CTFs, and training modules.";
 	} else if (query.match(/(ctf|cft)/)) {
-		fallbackText = "CTF (Capture The Flag), siber güvenlik yarışmalarıdır. Kriptografi, web açıkları, tersine mühendislik gibi beceriler kullanılır. CTF Radar sayfasında aktif yarışmaları takip edebilirsin.";
+		fallbackText = "CTF (Capture The Flag) are cybersecurity competitions focusing on skills like cryptography, web security, and reverse engineering. Check the CTF Radar page for active events.";
 	} else if (query.match(/(sql|injection)/)) {
-		fallbackText = "SQL Injection, veritabanı sorgularına saldırı yapılmasıdır. Korunmak için Prepared Statements şarttır. Training > SQL Injection modülüne bak.";
+		fallbackText = "SQL Injection is an attack that targets database queries. Using Prepared Statements is the primary defense. Check out the Training > SQL Injection module.";
 	} else if (query.match(/(linux|terminal|bash)/)) {
-		fallbackText = "Linux, siber güvenliğin temelidir. Training > Linux 101 modülüyle başla.";
+		fallbackText = "Linux is the foundation of cybersecurity. Start with the Training > Linux 101 module.";
 	}
 
 	const encoder = new TextEncoder();
