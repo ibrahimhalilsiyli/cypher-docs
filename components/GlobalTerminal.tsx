@@ -325,6 +325,7 @@ Warning: You are accessing a government restricted system.
 Type [[b;green;]help] for a list of commands.
 `,
                         name: 'kali_term',
+                        // @ts-ignore - jquery.terminal accepts string for height
                         height: '100%',
                         prompt: `[[b;red;]root@kali][[b;white;]:${formatCwd()}# ]`,
                         onInit: function (term: any) {
