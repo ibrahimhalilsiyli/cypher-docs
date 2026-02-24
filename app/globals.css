@@ -1,0 +1,122 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: var(--font-inter);
+  --font-mono: var(--font-jetbrains-mono);
+
+  /* Map Tailwind colors to CSS variables */
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-secondary: var(--secondary);
+  --color-text: var(--text);
+  --color-text-muted: var(--text-muted);
+  --color-border: var(--border);
+}
+
+:root {
+  /* Light Mode Defaults */
+  --background: #faf9f6;
+  /* Light Cream / Off-White */
+  --surface: #f3f4f6;
+  --primary: #0070f3;
+  --primary-hover: #0051a2;
+  --secondary: #24292f;
+  --text: #1f2937;
+  --text-muted: #6b7280;
+  --border: #e5e7eb;
+}
+
+/* Dark Mode Defaults (Matching original design) */
+.dark {
+  --background: #0d1117;
+  --surface: #161b22;
+  --primary: #00f3ff;
+  --primary-hover: #00c7d1;
+  --secondary: #1f6feb;
+  --text: #c9d1d9;
+  --text-muted: #8b949e;
+  --border: #30363d;
+
+  /* Background Canvas Colors (Dark Mode) */
+  --canvas-particle: rgba(0, 255, 65, 0.5);
+  /* Cyber Green */
+  --canvas-line: rgba(0, 255, 65, 0.2);
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+@media print {
+  @page {
+    margin: 2cm;
+  }
+
+  body {
+    background: white !important;
+    color: black !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Hide Background Animation */
+  canvas,
+  .fixed.inset-0.z-0 {
+    display: none !important;
+  }
+
+  aside,
+  /* Sidebar */
+  nav,
+  /* Navbar */
+  .sticky,
+  /* Editor Toolbar */
+  button,
+  /* All Buttons */
+  .group\/richtext>div:first-child
+
+  /* RichText Toolbar */
+    {
+    display: none !important;
+  }
+
+  input,
+  textarea {
+    border: none !important;
+    resize: none !important;
+  }
+
+  /* Ensure content is visible */
+  main,
+  div {
+    background: transparent !important;
+    color: black !important;
+    box-shadow: none !important;
+  }
+
+  /* Expand Editor */
+  .max-w-4xl {
+    max-w: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+}
+
+@layer base {
+  body {
+    @apply bg-background text-text antialiased transition-colors duration-300;
+  }
+}
+
+/* Custom Utilities - Cleaner, less glow */
+.card-base {
+  @apply bg-surface border border-border rounded-md;
+}
+
+.terminal-text {
+  @apply font-mono text-sm;
+}

@@ -1,0 +1,133 @@
+"use client";
+
+import InteractiveTerminal from "@/components/training/InteractiveTerminal";
+import { ArrowLeft, CheckCircle2, FileSearch } from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
+
+export default function LogAnalysisLesson() {
+    const [step, setStep] = useState(0);
+    const [completed, setCompleted] = useState(false);
+
+    const steps = [
+        {
+            title: "Inspecting Access Logs",
+            instruction: "We have a web server access log 'access.log'. Use 'cat access.log' to view the raw data.",
+            expected: "cat access.log",
+            validate: (cmd: string) => cmd === "cat access.log",
+            response: (
+                <div className="text-text-muted">
+                    <div>192.168.1.10 - - [10/Oct/2023:14:00:01] "GET /index.html HTTP/1.1" 200 1024</div>
+                    <div>192.168.1.11 - - [10/Oct/2023:14:00:02] "POST /login.php HTTP/1.1" 200 512</div>
+                    <div>10.10.14.2 - - [10/Oct/2023:14:00:05] "GET /admin HTTP/1.1" 403 128</div>
+                    <div>10.10.14.2 - - [10/Oct/2023:14:01:00] "GET /../../etc/passwd HTTP/1.1" 200 2048</div>
+                    <div>... (2000 more lines) ...</div>
+                </div>
+            )
+        },
+        {
+            title: "Filtering with Grep",
+            instruction: "There's too much data. Search for '403' errors to find failed access attempts: 'grep \"403\" access.log'",
+            expected: "grep \"403\" access.log",
+            validate: (cmd: string) => cmd.includes("grep") && cmd.includes("403"),
+            response: (
+                <div className="text-text-muted">
+                    <div>10.10.14.2 - - [10/Oct/2023:14:00:05] "GET /admin HTTP/1.1" 403 128</div>
+                    <div>10.10.14.2 - - [10/Oct/2023:14:00:06] "GET /config HTTP/1.1" 403 128</div>
+                </div>
+            )
+        },
+        {
+            title: "Extracting IPs with Awk",
+            instruction: "We see suspicious activity. Let's extract just the IP addresses from the file. IPs are in the first column ($1). Use awk: 'awk \"{print $1}\" access.log | sort | uniq'",
+            expected: "awk \"{print $1}\" access.log | sort | uniq",
+            validate: (cmd: string) => cmd.includes("awk") && cmd.includes("print $1"),
+            response: (
+                <div className="text-text-muted">
+                    <div>192.168.1.10</div>
+                    <div>192.168.1.11</div>
+                    <div className="text-red-400 font-bold">10.10.14.2</div>
+                    <div>(Attack source identified)</div>
+                </div>
+            )
+        }
+    ];
+
+    const handleCommand = (cmd: string) => {
+        const currentTask = steps[step];
+
+        if (currentTask.validate(cmd)) {
+            setTimeout(() => {
+                if (step < steps.length - 1) {
+                    setStep(step + 1);
+                } else {
+                    setCompleted(true);
+                    // Award XP
+                    import("@/lib/gamification").then(({ completeModule }) => {
+                        completeModule("log-analysis");
+                    });
+                }
+            }, 2000);
+
+            return (
+                <div>
+                    {currentTask.response}
+                    <div className="mt-2 text-primary font-mono text-xs animate-pulse">
+                        [✔] LOGS_PARSED. THREAT_IDENTIFIED.
+                    </div>
+                </div>
+            );
+        }
+
+        if (cmd === "help") return "Commands: cat [file], grep [pattern] [file], awk [script] [file], sort, uniq";
+
+        return <span className="text-red-400 font-mono">zsh: command not found: {cmd.split(" ")[0]}</span>;
+    };
+
+    return (
+        <div className="min-h-screen bg-background flex flex-col md:flex-row font-mono">
+            <div className="w-full md:w-1/3 bg-surface border-r border-border p-8 flex flex-col">
+                <Link href="/training" className="inline-flex items-center text-text-muted hover:text-primary mb-8 transition-colors">
+                    <ArrowLeft size={16} className="mr-2" />
+                    Abort Mission
+                </Link>
+                <div className="mb-8">
+                    <div className="flex items-center gap-2 mb-2 text-primary">
+                        <FileSearch size={20} />
+                        <h1 className="text-2xl font-bold">Log Analysis</h1>
+                    </div>
+                    <div className="h-1 w-full bg-border rounded-full overflow-hidden">
+                        <div className="h-full bg-primary transition-all duration-500" style={{ width: `${((step) / steps.length) * 100}%` }} />
+                    </div>
+                </div>
+                {completed ? (
+                    <div className="bg-primary/10 border border-primary/20 p-6 rounded-lg animate-in fade-in slide-in-from-bottom-4">
+                        <CheckCircle2 size={32} className="text-primary mb-4" />
+                        <h3 className="text-xl font-bold text-primary mb-2">Threat Hunted</h3>
+                        <p className="text-text-muted mb-4">You successfully filtered logs to identify an attacker's IP address.</p>
+                        <Link href="/training" className="block w-full py-2 bg-primary text-white font-bold text-center rounded hover:bg-primary-hover transition-colors">Return to Base</Link>
+                    </div>
+                ) : (
+                    <div key={step} className="animate-in fade-in slide-in-from-right-4 duration-300">
+                        <h2 className="text-xl font-bold text-primary mb-4">{steps[step].title}</h2>
+                        <p className="text-text leading-relaxed mb-6">{steps[step].instruction}</p>
+                        <div className="bg-background p-4 rounded border border-border">
+                            <div className="text-xs text-text-muted mb-2">OPERATIONAL HINT:</div>
+                            <div className="font-mono text-primary">Try: {steps[step].expected}</div>
+                        </div>
+                    </div>
+                )}
+            </div>
+            <div className="flex-1 bg-background p-8 flex items-center justify-center relative overflow-hidden">
+                <div className="absolute inset-0 bg-grid-pattern opacity-[0.05] pointer-events-none" />
+                <div className="w-full max-w-3xl z-10">
+                    <InteractiveTerminal
+                        welcomeMessage="SIEM Terminal Interface v4.2. Log ingestion complete."
+                        onCommand={handleCommand}
+                        className="h-[600px] border-border shadow-2xl"
+                    />
+                </div>
+            </div>
+        </div>
+    );
+}

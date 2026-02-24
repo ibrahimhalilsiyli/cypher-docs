@@ -1,0 +1,45 @@
+{
+  "name": "cypher-docs",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "@ai-sdk/google": "^3.0.29",
+    "@ai-sdk/react": "^3.0.88",
+    "@prisma/client": "^7.4.0",
+    "@tailwindcss/postcss": "^4.1.18",
+    "@tiptap/extension-code-block": "^3.19.0",
+    "@tiptap/react": "^3.19.0",
+    "@tiptap/starter-kit": "^3.19.0",
+    "ai": "^6.0.86",
+    "clsx": "^2.1.1",
+    "date-fns": "^4.1.0",
+    "framer-motion": "^12.34.0",
+    "jquery": "^3.7.1",
+    "jquery.terminal": "^2.45.2",
+    "lucide-react": "^0.564.0",
+    "next": "16.1.6",
+    "next-auth": "^4.24.13",
+    "next-themes": "^0.4.6",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "sonner": "^2.0.7",
+    "tailwind-merge": "^3.4.0",
+    "tailwindcss": "^4.1.18",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.1.6",
+    "prisma": "^7.4.0",
+    "typescript": "^5"
+  }
+}
